@@ -1,0 +1,4 @@
+pynput==1.7.7
+six==1.16.0
+swig==4.2.1
+transitions==0.9.1
