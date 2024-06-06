@@ -4,6 +4,68 @@ from dataclasses import dataclass
 from typing import Callable, List, Dict, Optional
 from abc import ABC, abstractmethod
 
+
+class Clipboard:
+    def __init__(self, max_size: int):
+        """Инициализирует буфер обмена с заданным максимальным размером.
+        
+        Args:
+            max_size (int): Максимальное количество ячеек в буфере обмена.
+        """
+        self.max_size = max_size
+        self.buffer = {}
+        self.current_index = 1
+
+    def copy(self, text: str):
+        """Копирует текст в следующую ячейку буфера обмена.
+        
+        Args:
+            text (str): Текст для копирования.
+        """
+        if len(self.buffer) >= self.max_size:
+            print("Буфер обмена переполнен!")
+            return
+        
+        self.buffer[self.current_index] = text
+        print(f"Текст скопирован в ячейку {self.current_index}!")
+        self.current_index += 1
+
+    def paste(self, index: int) -> Optional[str]:
+        """Вставляет текст из указанной ячейки буфера обмена.
+        
+        Args:
+            index (int): Номер ячейки для вставки.
+        
+        Returns:
+            Optional[str]: Содержимое ячейки буфера обмена или None, если ячейка пуста.
+        """
+        if index in self.buffer:
+            print(f"Текст из ячейки {index} вставлен!")
+            return self.buffer[index]
+        else:
+            print(f"Ячейка {index} пуста!")
+            return None
+
+    def clear(self):
+        """Очищает буфер обмена."""
+        self.buffer.clear()
+        self.current_index = 1
+        print("Буфер обмена очищен!")
+
+    def list(self):
+        """Выводит содержимое буфера обмена."""
+        if not self.buffer:
+            print("Буфер обмена пуст!")
+            return
+        
+        for index, content in self.buffer.items():
+            print(f"Ячейка {index}: {content if isinstance(content, str) else repr(content)}")
+
+
+# Пример использования
+clipboard = Clipboard(max_size=5)
+
+
 @dataclass
 class MenuCommand:
     key: str
@@ -23,11 +85,16 @@ class SettingsCommand(BaseCommand):
 
 class CopyCommand(BaseCommand):
     def execute(self):
-        print("Текст скопирован!")
+        text = "Текст для копирования"  # В реальном сценарии этот текст должен поступать из активного окна или выделения
+        clipboard.copy(text)
 
 class PasteCommand(BaseCommand):
     def execute(self):
-        print("Текст вставлен!")
+        index = 1  # В реальном сценарии этот индекс должен поступать от пользователя или из контекста
+        text = clipboard.paste(index)
+        if text:
+            print(f"Вставленный текст: {text}")  # В реальном сценарии этот текст должен вставляться в активное окно или поле ввода
+
 
 class HelpCommand(BaseCommand):
     def execute(self):
@@ -35,11 +102,11 @@ class HelpCommand(BaseCommand):
 
 class ListCommand(BaseCommand):
     def execute(self):
-        print("Список элементов отображен!")
+        clipboard.list()
 
 class ClearCommand(BaseCommand):
     def execute(self):
-        print("Экран очищен!")
+        clipboard.clear()
 
 class WaitCommand(BaseCommand):
     def execute(self):
